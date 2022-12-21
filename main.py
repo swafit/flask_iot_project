@@ -64,7 +64,8 @@ def get_all_records_per_deviceid(deviceid):
 
 @app.route('/records/device/date')#<datetime:datetime>
 def get_all_records_per_date():#datetime
-    documents = db.records.find({"timestamp":})
+    # documents = db.records.find({"timestamp":})
+    documents = db.records.find({})
     for document in documents:
         print(document)
     return jsonify({'data retrieved': True})#, 404
