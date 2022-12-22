@@ -1,41 +1,44 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
+from flask import jsonify
+
+#, requests
 # import pymongo
 from datetime import datetime
-from pymongo.server_api import ServerApi
 from flask_pymongo import PyMongo
-import json, certifi
+import certifi
+from flask_ngrok import run_with_ngrok
 
 app = Flask(__name__)
+# run_with_ngrok(app)
+
 app.config["SECRET_KEY"] = "4bd20b174ad0cf543619b769972825a3bc72aac8"
 app.config['DEBUG'] = True
 app.config['MONGO_URI'] = 'mongodb+srv://adminaccount:AGenericPassword@iotproject.4vkcamj.mongodb.net/iotproject?retryWrites=true&w=majority'
 mongodb_client = PyMongo(app, tlsCAFile=certifi.where())
 db = mongodb_client.db
+
 # client = pymongo.MongoClient(
 #         'mongodb+srv://adminaccount:AGenericPassword@iotproject.4vkcamj.mongodb.net/?retryWrites=true&w=majority')  # , server_api=ServerApi('1')
 #     db = client.iotproject
 #     records = db.records
-
-
 # collection_name = mongo.db.collection_name
 
-
-@app.route('/record/', methods=['GET'])
+@app.route('/record/', methods=['POST'])
 def activate():
     print(datetime.now())
-    # print(pymongo.version)
-
     data = {
         "timestamp": datetime.now(),
-        "temperature": 29.32,
-        "humidity": 44.12,
-        "motiondetected": True,
-        "deviceid": 3
+        "temperature": request.json['temperature'],
+        "humidity": request.json['humidity'],
+        "motiondetected": request.json['motiondetected'],
+        "deviceid": request.json['deviceid']
     }
+    print(data)
     db.records.insert_one(data)
-    # deviceid = -1
+
+
+
     # minute = datetime.utcnow().replace(second=0, microsecond=0)
-    #
     # db.time_bucket.update_one(
     #     {'deviceId': deviceid, 'd': minute},
     #     {
@@ -47,13 +50,25 @@ def activate():
 
     return jsonify({'data sent': True})
 
+# @app.route('/records/')
+# def get_all_records():
+#     documents = db.records.find({})
+#     for document in documents:
+#         print(document)
+#     #     return document
+#     # return jsonify({for document in documents: True})
+#     return jsonify({'data retrieved': True})#, 404
 
 @app.route('/records/')
 def get_all_records():
+    documents = []
     documents = db.records.find({})
     for document in documents:
         print(document)
-    return jsonify({'data retrieved': True})#, 404
+    # len(documents)
+    #     return document
+    # return jsonify({for document in documents: True})
+    return jsonify({f'data retrieved {documents}': True})#, 404
 
 @app.route('/records/device/<int:deviceid>')
 def get_all_records_per_deviceid(deviceid):
@@ -88,7 +103,5 @@ def get_all_records_per_date():#datetime
 #     receipt[0]['amount'] = request.json.get('amount', receipt[0]['amount'])
 #     return jsonify({'receipt': receipt[0]});
 
-
-
-# if __name__ == '__main__':
-#     print_hi('PyCharm')
+if __name__ == "__main__":
+  app.run()

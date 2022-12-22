@@ -7,3 +7,4 @@ class Record():
     humidity: float
     motiondetected: bool
     deviceid: int
+    objectid: str
